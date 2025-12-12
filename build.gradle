@@ -1,12 +1,19 @@
 plugins {
-    id 'java'
+    id 'java-library'
+    id 'maven-publish'
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = 'org.example'
 version = '1.0-SNAPSHOT'
 
+java.sourceCompatibility = JavaVersion.VERSION_11
+
 repositories {
-    mavenCentral()
+    mavenLocal()
+    maven {
+        url = uri('https://repo.maven.apache.org/maven2/')
+    }
 }
 
 dependencies {
@@ -22,4 +29,24 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from(components.java)
+        }
+    }
+}
+
+shadowJar {
+    mergeServiceFiles()
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'org.vsearch.Main'
+        )
+    }
 }
