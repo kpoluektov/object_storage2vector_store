@@ -25,16 +25,15 @@ public class Document {
         UPLOADED,
         ADDED,
         FINISHED,
-        ERROR;
+        ERROR
     }
 
-    S3Object body;
-    String key;
-    String bucket;
-    Map<String, String> attributes;
-    Status status;
-    FileObject fileObject;
-    String index;
+    private S3Object body;
+    private final String key;
+    private final String bucket;
+    private Status status;
+    private FileObject fileObject;
+    private final String index;
 
     public Document(String bucket, String key, String index){
         this.bucket = bucket;
@@ -44,7 +43,6 @@ public class Document {
     }
     public Document(String bucket, String key, String index, Map<String, String> attributes){
         this(bucket, key, index);
-        this.attributes = attributes;
     }
     private void load() {
         this.body = S3Tools.getObject(bucket, key);
@@ -132,7 +130,7 @@ public class Document {
             this.status = Status.FINISHED;
         }
     }
-    private void addFileToIndex() throws InterruptedException {
+    private void addFileToIndex() {
         VectorStoreFile file = AIStudioClient.get()
                 .vectorStores()
                 .files()
@@ -153,5 +151,25 @@ public class Document {
             }
         }
         throw new RuntimeException("Cannot get status for file " + params.fileId());
+    }
+
+    public String getStatus() {
+        return status.name();
+    }
+    public String getFileId(){
+        return fileObject.id();
+    }
+    public String getIndex(){
+        return index;
+    }
+    public String getKey(){
+        return key;
+    }
+    public void setStatus(String status){
+        this.status = Status.valueOf(status);
+    }
+
+    public void setFileObject(String fileId){
+        this.fileObject= AIStudioClient.get().files().retrieve(fileId);
     }
 }

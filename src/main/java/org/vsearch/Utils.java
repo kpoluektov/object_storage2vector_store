@@ -15,6 +15,7 @@ public class Utils {
             InputStream inputStream = new FileInputStream(file);
             Yaml yaml = new Yaml();
             settings = yaml.load(inputStream);
+
         } catch (FileNotFoundException e) {
             throw  new RuntimeException("Not found " + file);
         }
@@ -26,21 +27,15 @@ public class Utils {
         } else throw new RuntimeException("Not found key " + path);
     }
 
-    private static Map<String, String> getFamily(String family){
+    private static Map<String, Object> getFamily(String family){
         if (settings.containsKey(family)){
-            return (Map<String, String>) settings.get(family);
+            return (Map<String, Object>) settings.get(family);
         } else throw new RuntimeException("Not found key " + family);
     }
     public static String getString(String family, String path){
-        return getFamily(family).get(path);
+        return (String) getFamily(family).get(path);
     }
-    public static Map<?,?> getMap(String path){
-        return (Map<?,?>) settings.get(path);
-    }
-    public static Integer getInteger(String path){
-        return (Integer) get(path);
-    }
-    public static Boolean getBoolean(String path){
-        return (Boolean) get(path);
+    public static Map<String, Object> getDBSettings(){
+        return getFamily("pg");
     }
 }
