@@ -38,6 +38,9 @@ public class Utils {
     public static int getInt(String family, String path){
         return (int) getFamily(family).get(path);
     }
+    public static boolean getBoolean(String family, String path){
+        return (boolean) getFamily(family).get(path);
+    }
     public static Map<String, Object> getDBSettings(){
         return getFamily("pg");
     }

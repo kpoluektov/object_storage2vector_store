@@ -21,8 +21,9 @@ import java.util.concurrent.TimeUnit;
 
 public class Document {
     private static final Logger log = LoggerFactory.getLogger(Document.class);
-    private static int retryCount = Utils.getInt("aistudio", "retryCount");
-    private static int waitMillis = Utils.getInt("aistudio", "waitMillis");;
+    private static final int retryCount = Utils.getInt("aistudio", "retryCount");
+    private static final int waitMillis = Utils.getInt("aistudio", "waitMillis");
+    private static final boolean skipStatusVerify = Utils.getBoolean("aistudio", "skipStatusVerify");
     public enum Status {
         INITED,
         LOADED,
@@ -53,7 +54,8 @@ public class Document {
         this.status = Status.LOADED;
     }
     public void proceed() {
-        while(!Status.FINISHED.equals(this.status)){
+        while(!(Status.FINISHED.equals(this.status) || (
+        skipStatusVerify && Status.ADDED.equals(this.status)))){
             try {
                 next();
             } catch (IOException | InterruptedException e) {
@@ -122,6 +124,8 @@ public class Document {
             //all is done
             return;
         }
+        //if not verify - leave it in added status
+        if (skipStatusVerify) return;
         com.openai.models.vectorstores.files.FileRetrieveParams params
                 = com.openai.models.vectorstores.files.FileRetrieveParams.builder()
                 .fileId(this.fileObject.id())
