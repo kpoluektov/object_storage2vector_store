@@ -2,6 +2,7 @@ package org.vsearch.doc;
 
 import com.amazonaws.services.s3.model.S3Object;
 import com.openai.core.MultipartField;
+import com.openai.models.files.FileCreateParams;
 import com.openai.models.files.FileObject;
 import com.openai.models.files.FilePurpose;
 
@@ -11,8 +12,12 @@ import org.slf4j.LoggerFactory;
 import org.vsearch.AIStudioClient;
 import org.vsearch.S3Tools;
 
+import javax.mail.internet.MimeUtility;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -78,6 +83,7 @@ public class Document {
                 throw new RuntimeException("Unknown status " + this.status);
         }
     }
+
     private void upload() throws IOException {
         String fileName = this.body.getKey().substring(this.body.getKey().lastIndexOf('/') + 1);
         String extension = null;
@@ -85,12 +91,13 @@ public class Document {
         if (i > 0) {
             extension = fileName.substring(i+1);
         }
-        com.openai.models.files.FileCreateParams params = com.openai.models.files.FileCreateParams.builder()
+
+        com.openai.models.files.FileCreateParams params = FileCreateParams.builder()
                 .purpose(FilePurpose.FINE_TUNE)
-                .expiresAfter(com.openai.models.files.FileCreateParams.ExpiresAfter.builder().seconds(10000).build())
+                .expiresAfter(FileCreateParams.ExpiresAfter.builder().seconds(10000).build())
                 .file(MultipartField.<InputStream>builder()
                         .value(this.body.getObjectContent())
-                        .filename(fileName)
+                        .filename(new String(fileName.getBytes(), StandardCharsets.ISO_8859_1))
                         .contentType(DocumentUtils.getMimeTypeByExtension(extension))
                         .build())
                 .build();

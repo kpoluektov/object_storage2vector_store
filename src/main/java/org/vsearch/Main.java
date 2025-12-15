@@ -53,7 +53,7 @@ public class Main {
             CompletableFuture.allOf(completableFutures).join();
         } catch (CompletionException ex) {
             // Handle exceptions from any of the CompletableFutures
-            log.error("An exception occurred: {}", ex.getCause().getMessage());
+            log.error("An exception occurred: ", ex);
         }
         log.info("Finished in {} seconds", (System.currentTimeMillis() - startTime)/1000);
         executor.shutdown();
