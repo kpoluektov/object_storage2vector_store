@@ -12,12 +12,9 @@ import org.slf4j.LoggerFactory;
 import org.vsearch.AIStudioClient;
 import org.vsearch.S3Tools;
 
-import javax.mail.internet.MimeUtility;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
