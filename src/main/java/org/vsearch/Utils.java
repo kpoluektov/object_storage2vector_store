@@ -35,6 +35,9 @@ public class Utils {
     public static String getString(String family, String path){
         return (String) getFamily(family).get(path);
     }
+    public static int getInt(String family, String path){
+        return (int) getFamily(family).get(path);
+    }
     public static Map<String, Object> getDBSettings(){
         return getFamily("pg");
     }

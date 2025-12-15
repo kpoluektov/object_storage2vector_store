@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vsearch.AIStudioClient;
 import org.vsearch.S3Tools;
+import org.vsearch.Utils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +21,8 @@ import java.util.concurrent.TimeUnit;
 
 public class Document {
     private static final Logger log = LoggerFactory.getLogger(Document.class);
-
+    private static int retryCount = Utils.getInt("aistudio", "retryCount");
+    private static int waitMillis = Utils.getInt("aistudio", "waitMillis");;
     public enum Status {
         INITED,
         LOADED,
@@ -143,14 +145,14 @@ public class Document {
         finishIt(file.status());
     }
     private VectorStoreFile.Status retrieveStatus(com.openai.models.vectorstores.files.FileRetrieveParams params) throws InterruptedException {
-        int cnt = 3;
+        int cnt = retryCount;
         VectorStoreFile file;
         while (cnt > 0){
             try{
                 file = AIStudioClient.get().vectorStores().files().retrieve(params);
                 return file.status();
             } catch (com.openai.errors.NotFoundException e) {
-                TimeUnit.MILLISECONDS.sleep(500);
+                TimeUnit.MILLISECONDS.sleep(waitMillis);
                 cnt--;
             }
         }
