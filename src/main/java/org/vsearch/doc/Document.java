@@ -1,6 +1,5 @@
 package org.vsearch.doc;
 
-import com.amazonaws.services.s3.model.S3Object;
 import com.openai.core.MultipartField;
 import com.openai.models.files.FileCreateParams;
 import com.openai.models.files.FileObject;
@@ -10,7 +9,8 @@ import com.openai.models.vectorstores.files.VectorStoreFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vsearch.AIStudioClient;
-import org.vsearch.S3Tools;
+import org.vsearch.S3NewTools;
+
 import org.vsearch.Utils;
 
 import java.io.IOException;
@@ -33,7 +33,6 @@ public class Document {
         ERROR
     }
 
-    private S3Object body;
     private final String key;
     private final String bucket;
     private Status status;
@@ -50,7 +49,7 @@ public class Document {
         this(bucket, key, index);
     }
     private void load() {
-        this.body = S3Tools.getObject(bucket, key);
+        //this.body = S3NewTools.getObject(bucket, key);
         this.status = Status.LOADED;
     }
     public void proceed() {
@@ -86,7 +85,7 @@ public class Document {
     }
 
     private void upload() throws IOException {
-        String fileName = this.body.getKey().substring(this.body.getKey().lastIndexOf('/') + 1);
+        String fileName = this.key.substring(this.key.lastIndexOf('/') + 1);
         String extension = null;
         int i = fileName.lastIndexOf('.');
         if (i > 0) {
@@ -97,7 +96,7 @@ public class Document {
                 .purpose(FilePurpose.FINE_TUNE)
                 .expiresAfter(FileCreateParams.ExpiresAfter.builder().seconds(10000).build())
                 .file(MultipartField.<InputStream>builder()
-                        .value(this.body.getObjectContent())
+                        .value(S3NewTools.getObjectContent(bucket, key))
                         .filename(new String(fileName.getBytes(), StandardCharsets.ISO_8859_1))
                         .contentType(DocumentUtils.getMimeTypeByExtension(extension))
                         .build())
@@ -105,10 +104,10 @@ public class Document {
         try {
             this.fileObject = AIStudioClient.get().files().create(params);
         } catch (Exception e) {
-            log.error("Can't write object {}", this.body.getKey());
+            log.error("Can't write object {}", this.key);
             throw e;
-        } finally {
-            this.body.getObjectContent().close();
+//        } finally {
+//            this.body.getObjectContent().close();
         }
         log.debug("File {} loaded", fileName);
         this.status = Status.UPLOADED;

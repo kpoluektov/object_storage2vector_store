@@ -1,11 +1,11 @@
 package org.vsearch;
 
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vsearch.db.DBConnection;
 import org.vsearch.doc.Document;
 import org.vsearch.vectorstore.VStore;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +20,7 @@ public class Main {
             throw new Exception("Need path to properties yaml");
         }
         Utils.init(args[0]);
-        S3Tools.init();
+        S3NewTools.init();
         String bucket = Utils.getString("s3", "bucket");
         String extension = Utils.getString("s3", "extension");
         String VectorStoreId = Utils.getString("aistudio", "indexId");
@@ -33,30 +33,35 @@ public class Main {
         }
         ExecutorService executor = Executors.newFixedThreadPool(4);
         DBConnection connection = new DBConnection(Utils.getDBSettings());
-        List<S3ObjectSummary> objectList = S3Tools.getObjects(
+        int totalCount = 0;
+        do{
+            List<S3Object> objectList = S3NewTools.getPaginatedResponse(
                     bucket,
                     Utils.getString("s3", "prefix")
-                ).getObjectSummaries();
-        log.info("Found {} objects in bucket {}", objectList.size(), bucket);
-        List<Runnable> runnables = new ArrayList<>();
-        for ( S3ObjectSummary summary : objectList ) {
-            if (summary.getKey().endsWith(extension)) {
-                runnables.add(createDocumentTask(summary.getKey(), bucket, store, connection));
+            );
+            log.info("Found {} objects in bucket {}", objectList.size(), bucket);
+            totalCount += objectList.size();
+            List<Runnable> runnables = new ArrayList<>();
+            for ( S3Object object : objectList ) {
+                if (object.key().endsWith(extension)) {
+                    runnables.add(createDocumentTask(object.key(), bucket, store, connection));
+                }
             }
-        }
-        CompletableFuture<?>[] completableFutures = runnables.stream()
-                .map(CompletableFuture::runAsync)
-                .toArray(CompletableFuture<?>[]::new);
-        log.info("Start processing entities");
-        long startTime = System.currentTimeMillis();
-        try {
-            CompletableFuture.allOf(completableFutures).join();
-        } catch (CompletionException ex) {
-            // Handle exceptions from any of the CompletableFutures
-            log.error("An exception occurred: ", ex);
-        }
-        log.info("Finished in {} seconds", (System.currentTimeMillis() - startTime)/1000);
+            CompletableFuture<?>[] completableFutures = runnables.stream()
+                    .map(CompletableFuture::runAsync)
+                    .toArray(CompletableFuture<?>[]::new);
+            log.info("Start processing entities");
+            long startTime = System.currentTimeMillis();
+            try {
+                CompletableFuture.allOf(completableFutures).join();
+            } catch (CompletionException ex) {
+                // Handle exceptions from any of the CompletableFutures
+                log.error("Global exception occurred: ", ex);
+            }
+            log.info("{} objects finished in {} seconds", totalCount, (System.currentTimeMillis() - startTime)/1000);
+        }while (S3NewTools.hasMore());
         executor.shutdown();
+        S3NewTools.close();
     }
     private static Runnable createDocumentTask(String key, String bucket, VStore store, DBConnection connection){
         return new Runnable() {

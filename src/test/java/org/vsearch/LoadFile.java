@@ -7,7 +7,7 @@ public class LoadFile {
     @Test
     public void TestOneFile() {
         Utils.init("src/test/resources/application.yaml");
-        S3Tools.init();
+        S3NewTools.init();
         Document doc = new Document(
                 "pol-bucket-for-agent",
                 "input/file1.txt",
