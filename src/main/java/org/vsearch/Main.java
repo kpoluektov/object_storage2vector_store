@@ -35,6 +35,7 @@ public class Main {
         }
         ExecutorService executor = Executors.newFixedThreadPool(4);
         DBConnection connection = new DBConnection(Utils.getDBSettings());
+        long startOverallTime = System.currentTimeMillis();
         int totalCount = 0;
         do{
             List<S3Object> objectList = S3NewTools.getPaginatedResponse(
@@ -60,16 +61,23 @@ public class Main {
                 // Handle exceptions from any of the CompletableFutures
                 log.error("Global exception occurred: ", ex);
             }
-            log.info("{} objects finished in {} seconds", totalCount, (System.currentTimeMillis() - startTime)/1000);
+            log.info("{} objects finished in {} seconds", totalCount,
+                    (System.currentTimeMillis() - startTime)/1000);
         }while (S3NewTools.hasMore());
         executor.shutdown();
         S3NewTools.close();
+        log.info("{} objects total loaded in {} seconds", totalCount,
+                (System.currentTimeMillis() - startOverallTime)/1000);
     }
-    private static Runnable createDocumentTask(String key, String bucket, VStore store, DBConnection connection){
+    private static Runnable createDocumentTask(String key,
+                                               String bucket,
+                                               VStore store,
+                                               DBConnection connection){
         return () -> {
             Document doc =
                     new Document(bucket, key, store
-                    // attributes example       , Map.of("uri", JsonValue.from(key))
+                            // attributes example
+                            // , Map.of("uri", JsonValue.from(key))
                     );
             connection.syncStatus(doc);
             try {

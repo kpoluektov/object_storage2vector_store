@@ -32,7 +32,7 @@ public class FileAPI {
                         FileCreateParams
                         .ExpiresAfter
                         .builder()
-                        .seconds(hoursToExpire * 86400L)
+                        .seconds(hoursToExpire * 3600L)
                         .build()
                 )
                 .file(
