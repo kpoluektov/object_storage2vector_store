@@ -1,4 +1,4 @@
-package org.vsearch.doc;
+package org.vsearch.document;
 
 public class DocumentUtils {
     public static String getMimeTypeByExtension(String extension){

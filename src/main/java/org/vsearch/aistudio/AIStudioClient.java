@@ -1,12 +1,12 @@
-package org.vsearch;
+package org.vsearch.aistudio;
 
 import com.openai.client.OpenAIClient;
 import com.openai.client.okhttp.OpenAIOkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.vsearch.Utils;
 
 public class AIStudioClient {
-    private static final Logger log = LoggerFactory.getLogger(AIStudioClient.class);
     private static OpenAIClient client;
     public static void init(String apiKey, String baseUrl, String project){
         client = OpenAIOkHttpClient.builder()

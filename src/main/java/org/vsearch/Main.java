@@ -2,9 +2,11 @@ package org.vsearch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.vsearch.aistudio.AIStudioClient;
 import org.vsearch.db.DBConnection;
-import org.vsearch.doc.Document;
-import org.vsearch.vectorstore.VStore;
+import org.vsearch.document.Document;
+import org.vsearch.aistudio.vectorstore.VStore;
+import org.vsearch.object_storage.S3NewTools;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
 import java.util.ArrayList;
@@ -23,7 +25,7 @@ public class Main {
         S3NewTools.init();
         String bucket = Utils.getString("s3", "bucket");
         String extension = Utils.getString("s3", "extension");
-        String VectorStoreId = Utils.getString("aistudio", "indexId");
+        String VectorStoreId = Utils.getString("aistudio", "indexId", true);
         AIStudioClient.init();
         VStore store;
         if (VectorStoreId != null) {
@@ -64,21 +66,21 @@ public class Main {
         S3NewTools.close();
     }
     private static Runnable createDocumentTask(String key, String bucket, VStore store, DBConnection connection){
-        return new Runnable() {
-            @Override
-            public void run() {
-                Document doc = new Document(bucket, key, store.getId());
-                connection.syncStatus(doc);
-                try {
-                    log.debug("Working with object {}", key);
-                    doc.proceed();
-                    log.debug("Object with key {} added to index {}", key, store.getId());
-                } catch (RuntimeException e) {
-                    Thread.currentThread().interrupt();
-                    log.error("Task: {} was interrupted with message {}", key, e.getMessage(), e);
-                } finally {
-                    connection.saveRecord(doc);
-                }
+        return () -> {
+            Document doc =
+                    new Document(bucket, key, store
+                    // attributes example       , Map.of("uri", JsonValue.from(key))
+                    );
+            connection.syncStatus(doc);
+            try {
+                log.debug("Working with object {}", key);
+                doc.proceed();
+                log.debug("Object with key {} added to index {}", key, store.getId());
+            } catch (RuntimeException e) {
+                Thread.currentThread().interrupt();
+                log.error("Task: {} was interrupted with message {}", key, e.getMessage(), e);
+            } finally {
+                connection.saveRecord(doc);
             }
         };
     }

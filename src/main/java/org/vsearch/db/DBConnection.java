@@ -2,10 +2,9 @@ package org.vsearch.db;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vsearch.doc.Document;
+import org.vsearch.document.Document;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

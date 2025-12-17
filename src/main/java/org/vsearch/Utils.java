@@ -21,25 +21,30 @@ public class Utils {
         }
 
     }
-    private static Object get(String path){
-        if (settings.containsKey(path)){
-            return settings.get(path);
-        } else throw new RuntimeException("Not found key " + path);
-    }
 
     private static Map<String, Object> getFamily(String family){
         if (settings.containsKey(family)){
             return (Map<String, Object>) settings.get(family);
-        } else throw new RuntimeException("Not found key " + family);
+        } else throw new RuntimeException("Not found family key " + family);
+    }
+    public static Object getObject(String family, String path, boolean doNotThrowEx){
+        var familyGroup = getFamily(family);
+        if (familyGroup.containsKey(path))
+            return familyGroup.get(path);
+        else if (!doNotThrowEx) throw new RuntimeException("Not found key " + path + " for family " + family);
+        return null;
     }
     public static String getString(String family, String path){
-        return (String) getFamily(family).get(path);
+        return getString(family, path, false);
     }
-    public static int getInt(String family, String path){
-        return (int) getFamily(family).get(path);
+    public static String getString(String family, String path, boolean doNotThrowEx){
+        return (String) getObject(family, path, doNotThrowEx);
     }
-    public static boolean getBoolean(String family, String path){
-        return (boolean) getFamily(family).get(path);
+    public static Integer getInt(String family, String path){
+        return (Integer) getObject(family, path, true);
+    }
+    public static Boolean getBoolean(String family, String path){
+        return (Boolean) getObject(family, path, true);
     }
     public static Map<String, Object> getDBSettings(){
         return getFamily("pg");

@@ -1,5 +1,6 @@
-package org.vsearch;
+package org.vsearch.object_storage;
 
+import org.vsearch.Utils;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.regions.Region;
