@@ -27,10 +27,10 @@ public class S3NewTools {
     }
     public static void init(){
         init(
-                Utils.getString("s3", "accessKey"),
-                Utils.getString("s3", "secretKey"),
-                Utils.getString("s3", "endpoint"),
-                Utils.getString("s3", "region")
+                Utils.getString(Utils.S3, "accessKey"),
+                Utils.getString(Utils.S3, "secretKey"),
+                Utils.getString(Utils.S3, "endpoint"),
+                Utils.getString(Utils.S3, "region")
         );
     }
     public static List<S3Object> getPaginatedResponse(String bucket, String prefix){

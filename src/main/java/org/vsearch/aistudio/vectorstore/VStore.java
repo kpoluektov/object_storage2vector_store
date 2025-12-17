@@ -24,10 +24,10 @@ public class VStore {
     VectorStore store;
 
     private static final int retryCount = Optional
-            .ofNullable(Utils.getInt("aistudio", "retryCount"))
+            .ofNullable(Utils.getInt(Utils.AISTUDIO, "retryCount"))
             .orElse(3);
     private static final int waitMillis = Optional
-            .ofNullable(Utils.getInt("aistudio", "waitMillis"))
+            .ofNullable(Utils.getInt(Utils.AISTUDIO, "waitMillis"))
             .orElse(100);
 
     public VStore(String index){
@@ -35,8 +35,9 @@ public class VStore {
         log.info("Vector store with id {} retrieved", store.id());
     }
     public VStore(){
+        String indexName = Utils.getString(Utils.AISTUDIO, "indexName");
         VectorStoreCreateParams params = VectorStoreCreateParams.builder()
-                .name(Utils.getString("aistudio", "indexName"))
+                .name(indexName)
                 .build();
         store = AIStudioClient.get().vectorStores().create(params);
         log.info("New Vector store with id {} added", store.id());

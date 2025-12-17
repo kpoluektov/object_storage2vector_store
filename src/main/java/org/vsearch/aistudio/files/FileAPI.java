@@ -16,7 +16,7 @@ import java.util.Optional;
 
 public class FileAPI {
     private static final int hoursToExpire = Optional
-            .ofNullable(Utils.getInt("aistudio", "hoursToExpire"))
+            .ofNullable(Utils.getInt(Utils.AISTUDIO, "hoursToExpire"))
             .orElse(72 /*three days*/);
     public static FileObject upload(InputStream fileContent,
                                     String fileName, Map<String, JsonValue> attributes){

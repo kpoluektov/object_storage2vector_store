@@ -19,7 +19,7 @@ import java.util.Optional;
 public class Document {
     private static final Logger log = LoggerFactory.getLogger(Document.class);
     private static final boolean skipStatusVerify = Optional
-            .ofNullable(Utils.getBoolean("aistudio", "skipStatusVerify"))
+            .ofNullable(Utils.getBoolean(Utils.AISTUDIO, "skipStatusVerify"))
             .orElse(false);
     public enum Status {
         INITED,
@@ -120,8 +120,8 @@ public class Document {
         finishIt(file.status());
     }
 
-    public String getStatus() {
-        return status.name();
+    public Status getStatus() {
+        return status;
     }
     public String getIndex(){
         return store.getId();

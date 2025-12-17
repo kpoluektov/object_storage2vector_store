@@ -17,9 +17,9 @@ public class AIStudioClient {
     }
     public static void init(){
         init(
-                Utils.getString("aistudio", "apiKey"),
-                Utils.getString("aistudio", "baseUrl"),
-                Utils.getString("aistudio", "project")
+                Utils.getString(Utils.AISTUDIO, "apiKey"),
+                Utils.getString(Utils.AISTUDIO, "baseUrl"),
+                Utils.getString(Utils.AISTUDIO, "project")
         );
     }
     public static OpenAIClient get(){

@@ -34,7 +34,7 @@ public class DBConnection implements Closeable {
             st.setString(1, doc.getKey());
             st.setString(2, doc.getIndex());
             st.setString(3, doc.getFileId());
-            st.setString(4, doc.getStatus());
+            st.setString(4, doc.getStatus().name());
             logger.trace("execite sql: {}", query);
             if (st.executeUpdate() != 1) throw new RuntimeException("Entity update missing for id " + doc.getKey()) ;
         } catch (SQLException e) {

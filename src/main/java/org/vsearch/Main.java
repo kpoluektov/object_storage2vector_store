@@ -23,9 +23,9 @@ public class Main {
         }
         Utils.init(args[0]);
         S3NewTools.init();
-        String bucket = Utils.getString("s3", "bucket");
-        String extension = Utils.getString("s3", "extension");
-        String VectorStoreId = Utils.getString("aistudio", "indexId", true);
+        String bucket = Utils.getString(Utils.S3, "bucket");
+        String extension = Utils.getString(Utils.S3, "extension");
+        String VectorStoreId = Utils.getString(Utils.AISTUDIO, "indexId", true);
         AIStudioClient.init();
         VStore store;
         if (VectorStoreId != null) {
@@ -39,7 +39,7 @@ public class Main {
         do{
             List<S3Object> objectList = S3NewTools.getPaginatedResponse(
                     bucket,
-                    Utils.getString("s3", "prefix")
+                    Utils.getString(Utils.S3, "prefix")
             );
             log.info("Found {} objects in bucket {}", objectList.size(), bucket);
             totalCount += objectList.size();

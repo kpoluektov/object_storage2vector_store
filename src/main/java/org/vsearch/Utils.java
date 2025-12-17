@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.util.Map;
 
 public class Utils {
+    public static final String AISTUDIO = "aistudio";
+    public static final String S3 = "s3";
     protected static Map<String, Object> settings;
     public static void init(String file) {
 
