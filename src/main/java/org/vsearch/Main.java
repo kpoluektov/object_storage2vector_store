@@ -1,5 +1,6 @@
 package org.vsearch;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vsearch.aistudio.AIStudioClient;
@@ -12,6 +13,7 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 public class Main {
     private static final Logger log = LoggerFactory.getLogger(Main.class);
@@ -44,25 +46,15 @@ public class Main {
             );
             log.info("Found {} objects in bucket {}", objectList.size(), bucket);
             totalCount += objectList.size();
-            List<Runnable> runnables = new ArrayList<>();
-            for ( S3Object object : objectList ) {
-                if (object.key().endsWith(extension)) {
-                    runnables.add(createDocumentTask(object.key(), bucket, store, connection));
-                }
-            }
-            CompletableFuture<?>[] completableFutures = runnables.stream()
-                    .map(CompletableFuture::runAsync)
-                    .toArray(CompletableFuture<?>[]::new);
-            log.info("Start processing entities");
             long startTime = System.currentTimeMillis();
-            try {
-                CompletableFuture.allOf(completableFutures).join();
-            } catch (CompletionException ex) {
-                // Handle exceptions from any of the CompletableFutures
-                log.error("Global exception occurred: ", ex);
+            if (! processChunk(objectList, extension, bucket, store, connection)){
+                log.error("Chunk processing finished with errors. Exiting...");
+                break;
             }
-            log.info("{} objects finished in {} seconds", totalCount,
-                    (System.currentTimeMillis() - startTime)/1000);
+            log.info("{} objects finished in {} seconds. Total time is {} seconds",
+                    totalCount,
+                    (System.currentTimeMillis() - startTime)/1000,
+                    (System.currentTimeMillis() - startOverallTime)/1000);
         }while (S3NewTools.hasMore());
         executor.shutdown();
         S3NewTools.close();
@@ -91,5 +83,31 @@ public class Main {
                 connection.saveRecord(doc);
             }
         };
+    }
+    private static Boolean processChunk(List<S3Object> objectList,
+                                    String extension,
+                                    String bucket,
+                                    VStore store,
+                                    DBConnection connection){
+        List<Runnable> runnables = new ArrayList<>();
+        for ( S3Object object : objectList ) {
+            if (object.key().endsWith(extension)) {
+                runnables.add(createDocumentTask(object.key(), bucket, store, connection));
+            }
+        }
+        @NotNull List<CompletableFuture<Void>> completableFutures = runnables.stream()
+                .map(CompletableFuture::runAsync)
+                .collect(Collectors.toList());
+
+        log.info("Start processing entities");
+        try {
+            CompletableFuture<Void> allOf = CompletableFuture
+                    .allOf(completableFutures.toArray(CompletableFuture<?>[]::new));
+            allOf.join();
+        } catch (CompletionException ex) {
+            // Handle exceptions from any of the CompletableFutures
+            log.error("Global exception occurred: ", ex);
+        }
+        return completableFutures.stream().allMatch(CompletableFuture::isDone);
     }
 }

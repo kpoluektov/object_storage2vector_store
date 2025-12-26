@@ -14,10 +14,13 @@ public class S3NewTools {
     static S3Client s3Client;
     static ListObjectsV2Response lastResponse;
     static String nextContinuationToken = null;
+    static Integer maxKeysPerRequest = 1000;
     public static void init(String accessKey,
                      String secretKey,
                      String endpoint,
-                     String region) {
+                     String region,
+                     Integer maxKeys ) {
+        maxKeysPerRequest = maxKeys;
         s3Client = S3Client.builder()
                 .endpointOverride(URI.create(endpoint))
                 .region(Region.of(region))
@@ -30,13 +33,15 @@ public class S3NewTools {
                 Utils.getString(Utils.S3, "accessKey"),
                 Utils.getString(Utils.S3, "secretKey"),
                 Utils.getString(Utils.S3, "endpoint"),
-                Utils.getString(Utils.S3, "region")
+                Utils.getString(Utils.S3, "region"),
+                Utils.getInt(Utils.S3, "maxKeys")
         );
     }
     public static List<S3Object> getPaginatedResponse(String bucket, String prefix){
         ListObjectsV2Request.Builder requestBuilder = ListObjectsV2Request.builder()
                 .bucket(bucket)
                 .prefix(prefix)
+                .maxKeys(maxKeysPerRequest)
                 .continuationToken(nextContinuationToken);
 
         lastResponse = s3Client.listObjectsV2(requestBuilder.build());
@@ -58,6 +63,4 @@ public class S3NewTools {
                 .build();
         return s3Client.getObject(request);
     }
-
-
 }
