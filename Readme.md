@@ -22,7 +22,7 @@ aistudio:
   indexName: myTestIndex
   retryCount: 100
   waitMillis: 1000
-  skipStatusVerify: true
+  finalStatus: ADDED
 pg:
   jdbcUrl: jdbc:postgresql://rc1a-8ugcgj0tw5eh0z5q.mdb.yandexcloud.net:6432/pol?targetServerType=master&ssl=true&sslmode=verify-full
   username: 

@@ -18,9 +18,12 @@ import java.util.Optional;
 
 public class Document {
     private static final Logger log = LoggerFactory.getLogger(Document.class);
-    private static final boolean skipStatusVerify = Optional
-            .ofNullable(Utils.getBoolean(Utils.AISTUDIO, "skipStatusVerify"))
-            .orElse(false);
+    private static final String finalStatus = Optional
+            .ofNullable(Utils.getString(Utils.AISTUDIO, "finalStatus"))
+            .orElse(Status.FINISHED.name());
+//    private static final boolean skipStatusVerify = Optional
+//            .ofNullable(Utils.getBoolean(Utils.AISTUDIO, "skipStatusVerify"))
+//            .orElse(false);
     public enum Status {
         INITED,
         LOADED,
@@ -52,8 +55,7 @@ public class Document {
         this.status = Status.LOADED;
     }
     public void proceed() {
-        while(!(Status.FINISHED.equals(this.status) || (
-        skipStatusVerify && Status.ADDED.equals(this.status)))){
+        while(!Status.valueOf(finalStatus).equals(this.status)){
             try {
                 next();
             } catch (IOException | InterruptedException e) {
@@ -71,7 +73,7 @@ public class Document {
                 upload();
                 break;
             case UPLOADED:
-                addFileToIndex(store);
+                addFileToIndex();
                 break;
             case ADDED:
                 finishIt();
@@ -102,11 +104,11 @@ public class Document {
         if (Status.FINISHED.equals(this.status)){
             //all is done
             return;
+        } else if (Status.valueOf(finalStatus).equals(this.status)) {
+            //if not verify - leave it in desired status
+            return;
         }
-        //if not verify - leave it in added status
-        if (skipStatusVerify) return;
-
-        finishIt(store.retrieveStatus(this.fileObject.id()));
+        finishIt(this.store.retrieveStatus(this.fileObject.id()));
     }
     private void finishIt(VectorStoreFile.Status status){
         if (Status.ADDED.equals(this.status)
@@ -114,20 +116,20 @@ public class Document {
             this.status = Status.FINISHED;
         }
     }
-    private void addFileToIndex(VStore store) {
-        VectorStoreFile file = store.addFileToIndex(this.fileObject, this.attributes);
+    private void addFileToIndex() {
+        VectorStoreFile file = this.store.addFileToIndex(this.fileObject, this.attributes);
         this.status = Status.ADDED;
         finishIt(file.status());
     }
 
     public Status getStatus() {
-        return status;
+        return this.status;
     }
     public String getIndex(){
-        return store.getId();
+        return this.store.getId();
     }
     public String getKey(){
-        return key;
+        return this.key;
     }
     public String getFileId(){
         return this.fileObject.id();

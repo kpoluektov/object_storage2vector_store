@@ -1,5 +1,6 @@
 package org.vsearch;
 
+import com.openai.core.JsonValue;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,8 +11,10 @@ import org.vsearch.aistudio.vectorstore.VStore;
 import org.vsearch.object_storage.S3NewTools;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -36,6 +39,7 @@ public class Main {
             store = new VStore();
         }
         ExecutorService executor = Executors.newFixedThreadPool(4);
+
         DBConnection connection = new DBConnection(Utils.getDBSettings());
         long startOverallTime = System.currentTimeMillis();
         int totalCount = 0;
@@ -69,7 +73,7 @@ public class Main {
             Document doc =
                     new Document(bucket, key, store
                             // attributes example
-                            // , Map.of("uri", JsonValue.from(key))
+                             , Map.of("uri", JsonValue.from(key))
                     );
             connection.syncStatus(doc);
             try {

@@ -15,7 +15,7 @@ public class DBConnection implements Closeable {
     private static final Logger logger = LoggerFactory.getLogger(DBConnection.class);
     private static final String tableName = "vector_store";
     public DBConnection(Map<String, Object> settings){
-        logger.info("Opening PG connection to {}", settings.values());
+        logger.info("Opening PG connection to {}", settings.get("jdbcUrl"));
         DataSource.init(settings, tableName);
     }
     public void saveRecord(Document doc) {
