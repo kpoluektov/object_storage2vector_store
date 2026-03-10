@@ -11,7 +11,7 @@ s3:
   secretKey: 
   endpoint: https://storage.yandexcloud.net/
   region: ru-central1
-  bucket: pol-ruwiki-docs
+  bucket: pol-some-docs
   prefix: files/Д
   extension: txt
 aistudio:
