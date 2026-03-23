@@ -49,7 +49,7 @@ public class DBConnection implements Closeable {
                      query)){
             st.setString(1, doc.getKey());
             st.setString(2, doc.getIndex());
-            logger.trace("execite sql: {}", query);
+            logger.trace("execute sql: {}", query);
             ResultSet rs = st.executeQuery();
             if (rs.next()) {
                 doc.setFileObject(rs.getString(1));

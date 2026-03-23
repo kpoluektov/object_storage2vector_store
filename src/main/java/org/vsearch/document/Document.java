@@ -122,6 +122,14 @@ public class Document {
         finishIt(file.status());
     }
 
+    public void reinit(){
+        log.info("Reinit file {} from {} to {}", this.fileObject.id(), this.getStatus(), Status.INITED);
+        this.store.deleteFile(this.fileObject.id(), true);
+        this.status = Status.ADDED;
+        FileAPI.deleteFile(this.fileObject.id(), true);
+        this.status = Status.INITED;
+    }
+
     public Status getStatus() {
         return this.status;
     }

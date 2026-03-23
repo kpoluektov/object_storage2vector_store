@@ -3,7 +3,8 @@ package org.vsearch.document;
 public class DocumentUtils {
     public static String getMimeTypeByExtension(String extension){
         switch (extension.toLowerCase()){
-            case "txt" :
+            case "wiki":
+            case "txt":
                 return "text/plain";
             case "json":
                 return "application/json";
