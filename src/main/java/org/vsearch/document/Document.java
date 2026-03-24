@@ -1,5 +1,6 @@
 package org.vsearch.document;
 import com.openai.core.JsonValue;
+import com.openai.errors.NotFoundException;
 import com.openai.models.files.FileObject;
 
 import com.openai.models.vectorstores.files.VectorStoreFile;
@@ -156,6 +157,10 @@ public class Document {
         this.status = Status.valueOf(status);
     }
     public void setFileObject(String fileId){
-        this.fileObject= FileAPI.retrieveFile(fileId);
+        try {
+            this.fileObject = FileAPI.retrieveFile(fileId);
+        } catch (NotFoundException e) {
+            log.error("File {} exists in DB but cannot be retrieved from Files storage", this.getFileName());
+        }
     }
 }
