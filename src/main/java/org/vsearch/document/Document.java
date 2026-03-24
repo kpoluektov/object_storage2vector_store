@@ -18,19 +18,26 @@ import java.util.Optional;
 
 public class Document {
     private static final Logger log = LoggerFactory.getLogger(Document.class);
-    private static final String finalStatus = Optional
-            .ofNullable(Utils.getString(Utils.AISTUDIO, "finalStatus"))
-            .orElse(Status.FINISHED.name());
+    private static final Status finalStatus = Optional
+            .ofNullable(Status.valueOf(Utils.getString(Utils.AISTUDIO, "finalStatus")))
+            .orElse(Status.FINISHED);
 //    private static final boolean skipStatusVerify = Optional
 //            .ofNullable(Utils.getBoolean(Utils.AISTUDIO, "skipStatusVerify"))
 //            .orElse(false);
     public enum Status {
-        INITED,
-        LOADED,
-        UPLOADED,
-        ADDED,
-        FINISHED,
-        ERROR
+        INITED(0),
+        LOADED(1),
+        UPLOADED(2),
+        ADDED(3),
+        FINISHED(4),
+        ERROR(-1);
+        private final int value;
+        Status(int value) {
+            this.value = value;
+        }
+        public int getValue() {
+                return this.value;
+        }
     }
     private Map<String, JsonValue> attributes;
     private final String key;
@@ -38,6 +45,7 @@ public class Document {
     private Status status;
     private FileObject fileObject;
     private final VStore store;
+    private final String fileName;
 
     public Document(String bucket, String key, VStore store){
         this.bucket = bucket;
@@ -45,6 +53,7 @@ public class Document {
         this.store = store;
         this.attributes = new HashMap<>();
         this.status = Status.INITED;
+        this.fileName = this.key.substring(this.key.lastIndexOf('/') + 1);
     }
     public Document(String bucket, String key, VStore store, Map<String, JsonValue> attributes){
         this(bucket, key, store);
@@ -55,7 +64,8 @@ public class Document {
         this.status = Status.LOADED;
     }
     public void proceed() {
-        while(!Status.valueOf(finalStatus).equals(this.status)){
+        //while(!Status.valueOf(finalStatus).equals(this.status)){
+        while(finalStatus.getValue() > this.status.getValue()){
             try {
                 next();
             } catch (IOException | InterruptedException e) {
@@ -86,7 +96,6 @@ public class Document {
     }
 
     private void upload(){
-        String fileName = this.key.substring(this.key.lastIndexOf('/') + 1);
         try {
             this.fileObject =
                     FileAPI.upload(S3NewTools.getObjectContent(bucket, key), fileName, attributes);
@@ -104,7 +113,7 @@ public class Document {
         if (Status.FINISHED.equals(this.status)){
             //all is done
             return;
-        } else if (Status.valueOf(finalStatus).equals(this.status)) {
+        } else if (finalStatus.equals(this.status)) {
             //if not verify - leave it in desired status
             return;
         }
@@ -142,6 +151,7 @@ public class Document {
     public String getFileId(){
         return this.fileObject.id();
     }
+    public String getFileName() { return this.fileName; }
     public void setStatus(String status){
         this.status = Status.valueOf(status);
     }
