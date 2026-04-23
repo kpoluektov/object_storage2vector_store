@@ -32,7 +32,7 @@ public class Document {
         FINISHED,
         ERROR
     }
-    private Map<String, JsonValue> attributes;
+    private HashMap<String, JsonValue> attributes;
     private final String key;
     private final String bucket;
     private Status status;
@@ -46,7 +46,7 @@ public class Document {
         this.attributes = new HashMap<>();
         this.status = Status.INITED;
     }
-    public Document(String bucket, String key, VStore store, Map<String, JsonValue> attributes){
+    public Document(String bucket, String key, VStore store, HashMap<String, JsonValue> attributes){
         this(bucket, key, store);
         this.attributes = attributes;
     }

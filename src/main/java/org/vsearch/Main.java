@@ -13,6 +13,7 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -70,10 +71,12 @@ public class Main {
                                                VStore store,
                                                DBConnection connection){
         return () -> {
+            HashMap<String, JsonValue> attributes = new HashMap<>();
+            attributes.put("uri", JsonValue.from(key));
             Document doc =
                     new Document(bucket, key, store
                             // attributes example
-                             , Map.of("uri", JsonValue.from(key))
+                            ,attributes
                     );
             connection.syncStatus(doc);
             try {

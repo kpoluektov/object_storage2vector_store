@@ -1,10 +1,13 @@
 package org.vsearch.aistudio.files;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openai.core.JsonValue;
 import com.openai.core.MultipartField;
 import com.openai.models.files.FileCreateParams;
 import com.openai.models.files.FileObject;
 import com.openai.models.files.FilePurpose;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.vsearch.Utils;
 import org.vsearch.aistudio.AIStudioClient;
 import org.vsearch.document.DocumentUtils;
@@ -15,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class FileAPI {
+    private static final Logger logger = LoggerFactory.getLogger(FileAPI.class);
     private static final int hoursToExpire = Optional
             .ofNullable(Utils.getInt(Utils.AISTUDIO, "hoursToExpire"))
             .orElse(72 /*three days*/);
@@ -27,7 +31,7 @@ public class FileAPI {
         }
         FileCreateParams params = FileCreateParams.builder()
                 .purpose(FilePurpose.ASSISTANTS)
-                .additionalBodyProperties(attributes)
+                .putAdditionalBodyProperty("attributes", JsonValue.from(convertAttributesToString(attributes)))
                 .expiresAfter(
                         FileCreateParams
                         .ExpiresAfter
@@ -48,5 +52,16 @@ public class FileAPI {
 
     public static FileObject retrieveFile(String fileId){
         return AIStudioClient.get().files().retrieve(fileId);
+    }
+    // method to dump attributes as Json
+    private static String convertAttributesToString(Map<String, JsonValue> attributes) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            // Convert map to String, handles proper quoting of values
+            return objectMapper.writeValueAsString(attributes);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return "{}";
+        }
     }
 }
