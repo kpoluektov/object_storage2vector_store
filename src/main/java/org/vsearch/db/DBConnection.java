@@ -20,7 +20,7 @@ public class DBConnection implements Closeable {
     }
     public void saveRecord(Document doc) {
         logger.debug("Saving document {} as {} by store {} in status {}",
-                doc.getKey(), doc.getFileId(), doc.getIndex(), doc.getStatus());
+                doc.getFileName(), doc.getFileId(), doc.getIndex(), doc.getStatus());
         String query = "with new_entity as (select ? as filename, " +
                 "? as vector_store_id, ? as file_id, ? as status)\n" +
                 "merge into " + tableName + " a using new_entity ns on (a.filename = ns.filename " +
@@ -31,12 +31,12 @@ public class DBConnection implements Closeable {
         try (Connection connection = DataSource.getConnection();
              PreparedStatement st = connection.prepareStatement(
                      query)){
-            st.setString(1, doc.getKey());
+            st.setString(1, doc.getFileName());
             st.setString(2, doc.getIndex());
             st.setString(3, doc.getFileId());
             st.setString(4, doc.getStatus().name());
             logger.trace("execite sql: {}", query);
-            if (st.executeUpdate() != 1) throw new RuntimeException("Entity update missing for id " + doc.getKey()) ;
+            if (st.executeUpdate() != 1) throw new RuntimeException("Entity update missing for id " + doc.getFileName()) ;
         } catch (SQLException e) {
             throw new RuntimeException("Error when updating entity", e);
         }
@@ -47,15 +47,15 @@ public class DBConnection implements Closeable {
         try (Connection connection = DataSource.getConnection();
              PreparedStatement st = connection.prepareStatement(
                      query)){
-            st.setString(1, doc.getKey());
+            st.setString(1, doc.getFileName());
             st.setString(2, doc.getIndex());
-            logger.trace("execite sql: {}", query);
+            logger.trace("execute sql: {}", query);
             ResultSet rs = st.executeQuery();
             if (rs.next()) {
                 doc.setFileObject(rs.getString(1));
                 doc.setStatus(rs.getString(2));
                 logger.info("Document {} found for index {}. Proceed from status {}",
-                        doc.getKey(), doc.getIndex(), doc.getStatus());
+                        doc.getFileName(), doc.getIndex(), doc.getStatus());
             }
             rs.close();
         } catch (SQLException e) {

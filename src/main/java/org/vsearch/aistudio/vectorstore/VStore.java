@@ -1,10 +1,12 @@
 package org.vsearch.aistudio.vectorstore;
 
 import com.openai.core.JsonValue;
+import com.openai.errors.NotFoundException;
 import com.openai.models.files.FileObject;
 import com.openai.models.vectorstores.VectorStore;
 import com.openai.models.vectorstores.VectorStoreCreateParams;
 import com.openai.models.vectorstores.files.FileCreateParams;
+import com.openai.models.vectorstores.files.FileDeleteParams;
 import com.openai.models.vectorstores.files.FileRetrieveParams;
 import com.openai.models.vectorstores.files.VectorStoreFile;
 import org.jetbrains.annotations.NotNull;
@@ -89,5 +91,23 @@ public class VStore {
             }
         }
         throw new RuntimeException("Cannot get status for file " + fileId);
+    }
+    public void deleteFile(String file, Boolean quiet){
+        FileDeleteParams params = FileDeleteParams.builder()
+                .fileId(file)
+                .vectorStoreId(this.getId())
+                .build();
+        try {
+            AIStudioClient.get()
+                    .vectorStores()
+                    .files().delete(params);
+        } catch (NotFoundException e) {
+            if (!quiet){
+                throw e;
+            } else {
+                log.trace("Quiet ignore that file {} not existed", file);
+            }
+
+        }
     }
 }

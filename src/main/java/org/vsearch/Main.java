@@ -81,6 +81,9 @@ public class Main {
             connection.syncStatus(doc);
             try {
                 log.debug("Working with object {}", key);
+                if(!Document.Status.INITED.equals(doc.getStatus()) && Utils.getBoolean(Utils.AISTUDIO, "renew")){
+                    doc.reinit();
+                }
                 doc.proceed();
                 log.debug("Object with key {} added to index {}", key, store.getId());
             } catch (RuntimeException e) {

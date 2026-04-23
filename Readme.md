@@ -22,9 +22,10 @@ aistudio:
   indexName: myTestIndex
   retryCount: 100
   waitMillis: 1000
-  finalStatus: ADDED
+  finalStatus: FINISHED
+  renew: false
 pg:
-  jdbcUrl: jdbc:postgresql://rc1a-8ugcgj0tw5eh0z5q.mdb.yandexcloud.net:6432/pol?targetServerType=master&ssl=true&sslmode=verify-full
+  jdbcUrl: jdbc:postgresql://rc1a-yandexcloudid.mdb.yandexcloud.net:6432/pol?targetServerType=master&ssl=true&sslmode=verify-full
   username: 
   password: 
   connectionTimeout: 5000
